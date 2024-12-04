@@ -43,8 +43,8 @@ func report_is_safe(reports [][]int) int {
 	for idx := range reports {
 		direction := 0
 		unsafe := false
-		for idy, levels := range reports[idx] {
-			_ = levels
+
+		for idy := range reports[idx] {
 			if idy == 0 {
 				continue
 			}
@@ -71,13 +71,11 @@ func report_is_safe(reports [][]int) int {
 			if unsafe {
 				break
 			}
-
 		}
 		if !unsafe {
 			safe += 1
 		}
 	}
-
 	return safe
 }
 
@@ -85,7 +83,6 @@ func main() {
 
 	small_reports := parse_report("./small.txt")
 	safe1 := report_is_safe(small_reports)
-
 	fmt.Printf("Part I (small): %d\n", safe1)
 	if safe1 != 2 {
 		log.Fatal("Wrong Answer")
