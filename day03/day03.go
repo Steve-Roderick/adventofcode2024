@@ -43,10 +43,10 @@ func null_descent(ts *descent) {
 }
 
 // Token parser with some state to accept variable number of numbers (1-3).
-func parse(memory string) int {
+func parse(memory string, dodo bool) int {
 
 	ts := descent{}
-
+	do := true
 	acc := 0
 	reset := true
 	for index := range memory {
@@ -59,6 +59,39 @@ func parse(memory string) int {
 		d := unicode.IsDigit(rune(c))
 		cc := string(c) // debug.
 		_ = cc
+
+		// do()
+		if c == 'd' && dodo {
+			ml := len(memory)
+			if (index + 3 - 1) > ml {
+				continue
+			}
+			do0 := memory[index+1] == 'o'
+			do1 := memory[index+2] == '('
+			do2 := memory[index+3] == ')'
+			if do0 && do1 && do2 {
+				do = true
+				continue
+			}
+		}
+
+		// don't()
+		if c == 'd' && dodo {
+			ml := len(memory)
+			if (index + 6 - 1) > ml {
+				continue
+			}
+			do0 := memory[index+1] == 'o'
+			do1 := memory[index+2] == 'n'
+			do3 := memory[index+3] == '\''
+			do2 := memory[index+4] == 't'
+			do4 := memory[index+5] == '('
+			do5 := memory[index+6] == ')'
+			if do0 && do1 && do2 && do3 && do4 && do5 {
+				do = false
+				continue
+			}
+		}
 
 		if c == 'm' && !ts.m {
 			ts.m = true
@@ -106,7 +139,11 @@ func parse(memory string) int {
 		if ts.cp && ts.n1 && ts.se && ts.n0 && ts.op && ts.l && ts.u && ts.m {
 			numa, _ := strconv.Atoi(ts.n0s)
 			numb, _ := strconv.Atoi(ts.n1s)
-			acc += numa * numb
+			if !dodo {
+				acc += numa * numb
+			} else if do {
+				acc += numa * numb
+			}
 			// dbg.
 			//fmt.Printf("mul(%d,%d)\n", numa, numb)
 			reset = true
@@ -131,16 +168,32 @@ func read_memory(fpath string) string {
 
 func main() {
 	small := read_memory("./small.txt")
-	small_1 := parse(small)
+	small_1 := parse(small, false)
 	fmt.Printf("Part I (small): %d\n", small_1)
 	if small_1 != 161 {
 		log.Fatal("Wrong Answer")
 	}
 
 	large := read_memory("./large.txt")
-	large_1 := parse(large)
+	large_1 := parse(large, false)
 	fmt.Printf("Part I (large): %d\n", large_1)
 	if large_1 != 166630675 {
+		log.Fatal("Wrong Answer")
+	}
+
+	fmt.Print("\n")
+
+	smallp2 := read_memory("./small2.txt")
+	smallp2_product := parse(smallp2, true)
+	fmt.Printf("Part II (small): %d\n", smallp2_product)
+	if smallp2_product != 48 {
+		log.Fatal("Wrong Answer")
+	}
+
+	largep2 := read_memory("./large.txt")
+	largep2_product := parse(largep2, true)
+	fmt.Printf("Part II (large): %d\n", largep2_product)
+	if largep2_product != 93465710 {
 		log.Fatal("Wrong Answer")
 	}
 }
