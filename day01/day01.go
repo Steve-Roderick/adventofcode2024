@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-func total_distance_sort(fpath string) int {
+func this_parse(fpath string) ([]int, []int) {
 	file, err := os.Open(fpath)
 	if err != nil {
 		log.Fatal(err)
@@ -22,33 +22,41 @@ func total_distance_sort(fpath string) int {
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		split := strings.Fields(scanner.Text())
-		numa, _ := strconv.Atoi(split[0])
-		numb, _ := strconv.Atoi(split[1])
+		numa, erra := strconv.Atoi(split[0])
+		numb, errb := strconv.Atoi(split[1])
+		if erra != nil || errb != nil {
+			log.Fatalf("Invalid number in line: %s", scanner.Text())
+		}
 		ida = append(ida, numa)
 		idb = append(idb, numb)
 	}
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
 	}
-	slicea := ida[:]
-	sliceb := idb[:]
 
-	sort.Ints(slicea)
-	sort.Ints(sliceb)
+	return ida, idb
+}
+
+// part I
+func total_distance_sort(fpath string) int {
+
+	ida, idb := this_parse(fpath)
+	sort.Ints(ida)
+	sort.Ints(idb)
 	var d int = 0
-	for index := range slicea {
-		a := slicea[index]
-		b := sliceb[index]
-		var c int = 0
+	for index := range ida {
+		a := ida[index]
+		b := idb[index]
 		if a >= b {
-			c = a - b
+			d += a - b
 		} else {
-			c = b - a
+			d += b - a
 		}
-		d += c
 	}
 	return d
 }
+
+// part II
 
 func main() {
 	small := total_distance_sort("./small.txt")
