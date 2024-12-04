@@ -57,6 +57,19 @@ func total_distance_sort(fpath string) int {
 }
 
 // part II
+func sim_score(fpath string) int {
+	ida, idb := this_parse(fpath)
+
+	acc := 0
+	freq := make(map[int]int)
+	for _, element := range idb {
+		freq[element] += 1
+	}
+	for _, element := range ida {
+		acc += (element * freq[element])
+	}
+	return acc
+}
 
 func main() {
 	small := total_distance_sort("./small.txt")
@@ -68,6 +81,18 @@ func main() {
 	large := total_distance_sort("./large.txt")
 	fmt.Printf("Part I (large): %d\n", large)
 	if large != 2113135 {
+		log.Fatal("Wrong Answer")
+	}
+
+	small2 := sim_score("./small.txt")
+	fmt.Printf("Part II (small): %d\n", small2)
+	if small2 != 31 {
+		log.Fatal("Wrong Answer")
+	}
+
+	large2 := sim_score("./large.txt")
+	fmt.Printf("Part II (small): %d\n", large2)
+	if large2 != 19097157 {
 		log.Fatal("Wrong Answer")
 	}
 }
