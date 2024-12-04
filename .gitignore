@@ -1,0 +1,10 @@
+# Binaries
+
+# IDE and editor settings
+.vscode/
+
+# Go-specific ignores
+*.exe
+*.out
+*.test
+day01/day01
