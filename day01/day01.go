@@ -10,9 +10,8 @@ import (
 	"strings"
 )
 
-func main() {
-
-	file, err := os.Open("./large.txt")
+func total_distance_sort(fpath string) int {
+	file, err := os.Open(fpath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -48,5 +47,19 @@ func main() {
 		}
 		d += c
 	}
-	fmt.Printf("Part I: %d\n", d)
+	return d
+}
+
+func main() {
+	small := total_distance_sort("./small.txt")
+	fmt.Printf("Part I (small): %d\n", small)
+	if small != 11 {
+		log.Fatal("Wrong Answer")
+	}
+
+	large := total_distance_sort("./large.txt")
+	fmt.Printf("Part I (large): %d\n", large)
+	if large != 2113135 {
+		log.Fatal("Wrong Answer")
+	}
 }
