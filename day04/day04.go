@@ -33,6 +33,7 @@ func read_puzzle(fpath string) []string {
 	return puzzle
 }
 
+// part I
 // easy cases
 func scan_xmas_samx(str string) int {
 	acc := 0
@@ -41,6 +42,7 @@ func scan_xmas_samx(str string) int {
 	return acc
 }
 
+// part I
 func puzzle_solver(puzzle []string) int {
 
 	// Handle each case in seperate loop
@@ -124,6 +126,115 @@ func puzzle_solver(puzzle []string) int {
 	return acc
 }
 
+// Part II
+func in_bound(r int, c int, rows int, cols int) bool {
+	return (r >= 0 && r < rows) && (c >= 0 && c < cols)
+}
+
+// Part II
+func xmas_solver_ii(puzzle []string) int {
+
+	acc := 0
+	rows := len(puzzle)
+	cols := len(puzzle[0])
+	for i := range puzzle {
+		for j := range puzzle[0] {
+
+			if puzzle[i][j] != 'A' {
+				continue
+			}
+
+			ul := false
+			ur := false
+			ll := false
+			lr := false
+
+			lr_m := false
+			lr_s := false
+
+			rl_m := false
+			rl_s := false
+
+			// UL
+			r := i
+			c := j
+			r--
+			c--
+			if in_bound(r, c, rows, cols) {
+				d := string(puzzle[r][c])
+				_ = d
+				if puzzle[r][c] == 'M' {
+					ul = true
+					lr_m = true
+				}
+				if puzzle[r][c] == 'S' {
+					ul = true
+					lr_s = true
+				}
+			}
+
+			// UR
+			r = i
+			c = j
+			r--
+			c++
+			if in_bound(r, c, rows, cols) {
+				d := string(puzzle[r][c])
+				_ = d
+				if puzzle[r][c] == 'S' {
+					ur = true
+					rl_s = true
+				}
+				if puzzle[r][c] == 'M' {
+					ur = true
+					rl_m = true
+				}
+			}
+
+			// LL
+			r = i
+			c = j
+			r++
+			c--
+			if in_bound(r, c, rows, cols) {
+				d := string(puzzle[r][c])
+				_ = d
+				if puzzle[r][c] == 'M' {
+					ll = true
+					rl_m = true
+				}
+				if puzzle[r][c] == 'S' {
+					ll = true
+					rl_s = true
+				}
+			}
+
+			// LR
+			r = i
+			c = j
+			r++
+			c++
+			if in_bound(r, c, rows, cols) {
+				d := string(puzzle[r][c])
+				_ = d
+				if puzzle[r][c] == 'S' {
+					lr = true
+					lr_s = true
+				}
+				if puzzle[r][c] == 'M' {
+					lr = true
+					lr_m = true
+				}
+			}
+
+			if ul && ur && ll && lr && rl_m && rl_s && lr_m && lr_s {
+				acc += 1
+			}
+		}
+	}
+	return acc
+}
+
 func main() {
 
 	small_puzzle := read_puzzle("./small.txt")
@@ -138,5 +249,19 @@ func main() {
 	fmt.Printf("Part I (large): %d\n", c2)
 	if c2 != 2549 {
 		log.Fatal("Wrong Answer)\n")
+	}
+
+	small_puzzle2 := read_puzzle("./small2.txt")
+	s := xmas_solver_ii(small_puzzle2)
+	fmt.Printf("Part II (small): %d\n", s)
+	if s != 9 {
+		log.Fatal("Wrong Answer\n")
+	}
+
+	s2 := xmas_solver_ii(large_puzzle)
+	fmt.Printf("Part II (large): %d\n", s2)
+
+	if s2 != 2003 {
+		log.Fatal("Wrong Answer\n")
 	}
 }
