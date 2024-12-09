@@ -93,6 +93,7 @@ func compute_antinodes(
 	puzzle [][]string,
 	antinodes_p *[][]int,
 	antennas map[string][]Antenna,
+	harmonics bool,
 ) {
 	antinodes := *antinodes_p
 	// For each frequency
@@ -105,11 +106,23 @@ func compute_antinodes(
 				}
 				anta := lst[i]
 				antb := lst[j]
+				if harmonics {
+					antinodes[anta.y][anta.x]++
+				}
 				xoa, yoa := antenna_offset(anta, antb)
-				nxa := anta.x + xoa
-				nya := anta.y + yoa
-				if bound_check(puzzle, nya, nxa) {
-					antinodes[nya][nxa]++
+				out_of_bounds := false
+				nxa := anta.x
+				nya := anta.y
+				for !out_of_bounds {
+					nxa = nxa + xoa
+					nya = nya + yoa
+					out_of_bounds = !bound_check(puzzle, nya, nxa)
+					if !out_of_bounds {
+						antinodes[nya][nxa]++
+					}
+					if !harmonics {
+						break
+					}
 				}
 			}
 		}
@@ -128,28 +141,27 @@ func uniq_antinode_pos(antinodes [][]int) int {
 	return acc
 }
 
-func solve_puzzle(puzzle [][]string) int {
+func solve_puzzle(puzzle [][]string, harmonics bool) int {
 	amap := antenna_map(puzzle)
 	antinodes := make_antinodes_map(puzzle)
-	compute_antinodes(puzzle, &antinodes, amap)
+	compute_antinodes(puzzle, &antinodes, amap, harmonics)
 	sol := uniq_antinode_pos(antinodes)
 	return sol
 }
 
-func main() {
-	// Small Problem
-	puzzle1 := read_puzzle("./small.txt")
-	sol1 := solve_puzzle(puzzle1)
-	fmt.Printf("Part I (small) %d\n", sol1)
-	if sol1 != 14 {
-		log.Fatal("Wrong")
+func test_puzzle(filepath string, harmonics bool, expected int, description string) {
+	puzzle := read_puzzle(filepath)
+	solution := solve_puzzle(puzzle, harmonics)
+	fmt.Printf("%s %d\n", description, solution)
+	if solution != expected {
+		log.Fatalf("Wrong: expected %d, got %d\n", expected, solution)
 	}
+}
 
-	// Large Problem
-	puzzle2 := read_puzzle("./large.txt")
-	sol2 := solve_puzzle(puzzle2)
-	fmt.Printf("Part I (large) %d\n", sol2)
-	if sol2 != 409 {
-		log.Fatal("Wrong")
-	}
+func main() {
+	test_puzzle("./small.txt", false, 14, "Part I (small):")
+	test_puzzle("./small_t.txt", true, 9, "Part I (small_t):")
+	test_puzzle("./large.txt", false, 409, "Part II (large):")
+	test_puzzle("./small.txt", true, 34, "Part II (small):")
+	test_puzzle("./large.txt", true, 1308, "Part II (large):")
 }
