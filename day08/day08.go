@@ -89,6 +89,14 @@ func bound_check(puzzle [][]string, y int, x int) bool {
 	return xok && yok
 }
 
+func move_mi(mi int) int {
+	mi++
+	if mi > 3 {
+		mi = 0
+	}
+	return mi
+}
+
 func compute_antinodes(
 	puzzle [][]string,
 	antinodes_p *[][]int,
