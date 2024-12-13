@@ -76,6 +76,19 @@ func greasy_fence_estimate(
 	return acc
 }
 
+func bulk_fence_estimate(
+	pmap map[int][]*Plot,
+	smap map[int]int,
+) int {
+	acc := 0
+	for i := range pmap {
+		area := len(pmap[i])
+		sides := smap[i]
+		acc += (area * sides)
+	}
+	return acc
+}
+
 func fence_count(plots [][]Plot, y int, x int) int {
 	fences := 0
 	for i := 0; i < 4; i++ {
@@ -91,6 +104,70 @@ func fence_count(plots [][]Plot, y int, x int) int {
 		}
 	}
 	return fences
+}
+
+// These are not used but helped to make corners array
+// var NW = [][]int{{0, -1}, {-1, 0}, {-1, -1}}
+// var NE = [][]int{{-1, 0}, {0, 1}, {-1, 1}}
+// var SE = [][]int{{0, 1}, {1, 0}, {1, 1}}
+// var SW = [][]int{{1, 0}, {0, -1}, {1, -1}}
+
+var corners = [][][]int{
+	{{0, -1}, {-1, 0}, {-1, -1}},
+	{{-1, 0}, {0, 1}, {-1, 1}},
+	{{0, 1}, {1, 0}, {1, 1}},
+	{{1, 0}, {0, -1}, {1, -1}},
+}
+
+func brother_plot(plots [][]Plot, gid int, y int, x int) bool {
+
+	if !bound_check(plots, y, x) {
+		return false
+	}
+	return plots[y][x].gid == gid
+}
+
+// Using corner counts
+func side_count(
+	plots [][]Plot,
+	group []*Plot,
+) int {
+	acc := 0
+	for i := range group {
+		plot := group[i]
+		gid := plot.gid
+		for c := 0; c < 4; c++ {
+
+			ay := corners[c][0][0] + plot.y
+			ax := corners[c][0][1] + plot.x
+
+			by := corners[c][1][0] + plot.y
+			bx := corners[c][1][1] + plot.x
+
+			dy := corners[c][2][0] + plot.y
+			dx := corners[c][2][1] + plot.x
+			//fmt.Printf("Z: (%d, %d) A: (%d, %d), B: (%d, %d), D: (%d, %d)\n",
+			//	plot.y, plot.x, ay, ax, by, bx, dy, dx)
+
+			a_brother := brother_plot(plots, gid, ay, ax)
+			b_brother := brother_plot(plots, gid, by, bx)
+			d_brother := brother_plot(plots, gid, dy, dx)
+
+			// Two types of corners:
+			// (outer corners with !a and !b)
+			// (innter corner with a and b and !d)
+			corner_ab := !a_brother && !b_brother
+			corner_in := a_brother && b_brother && !d_brother
+			if corner_ab {
+				acc++
+			}
+			if corner_in {
+				acc++
+			}
+
+		}
+	}
+	return acc
 }
 
 func BFS(pplots *[][]Plot, start_y int, start_x int, gid int) []*Plot {
@@ -132,11 +209,12 @@ func BFS(pplots *[][]Plot, start_y int, start_x int, gid int) []*Plot {
 	return group
 }
 
-func solve_puzzle(filepath string) int {
+func solve_puzzle(filepath string, bulk bool) int {
 	plots := read_puzzle(filepath)
 
 	pmap := map[int][]*Plot{}
 	fmap := make(map[int]int, 0)
+	smap := make(map[int]int, 0)
 	gid := -1
 	for y := range plots {
 		for x := range plots[y] {
@@ -147,6 +225,7 @@ func solve_puzzle(filepath string) int {
 
 				acc := 0
 				for i := range group {
+					// Fence Count
 					group[i].gid = gid
 					c := fence_count(plots, group[i].y, group[i].x)
 					group[i].fc = c
@@ -156,13 +235,29 @@ func solve_puzzle(filepath string) int {
 			}
 		}
 	}
-	cost := greasy_fence_estimate(pmap, fmap)
+
+	for i := range pmap {
+		acc := 0
+		if len(pmap[i]) <= 2 {
+			acc += 4
+		} else {
+			acc += side_count(plots, pmap[i])
+		}
+		smap[i] = acc
+	}
+
+	var cost int
+	if !bulk {
+		cost = greasy_fence_estimate(pmap, fmap)
+	} else {
+		cost = bulk_fence_estimate(pmap, smap)
+	}
 	return cost
 }
 
-func test_puzzle(filepath string, expected int, description string) {
+func test_puzzle(filepath string, bulk bool, expected int, description string) {
 
-	solution := solve_puzzle(filepath)
+	solution := solve_puzzle(filepath, bulk)
 	fmt.Printf("%s %d\n", description, solution)
 	if solution != expected {
 		log.Fatalf("Wrong: expected %d, got %d\n", expected, solution)
@@ -170,7 +265,11 @@ func test_puzzle(filepath string, expected int, description string) {
 }
 
 func main() {
-	test_puzzle("./tiny.txt", 140, "Part I (tiny):")
-	test_puzzle("./small.txt", 1930, "Part I (small):")
-	test_puzzle("./large.txt", 1387004, "Part I (large):")
+	test_puzzle("./tiny.txt", false, 140, "Part I (tiny):")
+	test_puzzle("./small.txt", false, 1930, "Part I (small):")
+	test_puzzle("./large.txt", false, 1387004, "Part I (large):")
+
+	test_puzzle("./tiny.txt", true, 80, "Part II (tiny):")
+	test_puzzle("./small.txt", true, 1206, "Part II (small):")
+	test_puzzle("./large.txt", true, 844198, "Part II (large):")
 }
