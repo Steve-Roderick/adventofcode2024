@@ -16,3 +16,4 @@ Learning `go` starting on day one.
 * [day09.go](./day09/day09.go) [--- Day  9: Disk Fragmenter ---](https://adventofcode.com/2024/day/9)
 * [day10.go](./day10/day10.go) [--- Day 10: Hoof It ---](https://adventofcode.com/2024/day/10)
 * [day11.go](./day11/day11.go) [--- Day 11: Plutonian Pebbles ---](https://adventofcode.com/2024/day/11)
+* [day12.go](./day11/day12.go) [--- Day 12: Garden Groups ---](https://adventofcode.com/2024/day/12)
